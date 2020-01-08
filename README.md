@@ -17,7 +17,7 @@
 
 ```bash
 # 克隆项目
-
+git clone https://github.com/13647227317/sysmanage-ui.git
 
 # 进入项目目录
 cd sysmanage-ui
