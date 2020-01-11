@@ -66,3 +66,6 @@ Modern browsers and Internet Explorer 10+.
 
 后端模块地址：
 https://github.com/13647227317/sysmanage.git
+
+已完成功能：
+登录、菜单树展示、标签导航、用户管理、角色管理
