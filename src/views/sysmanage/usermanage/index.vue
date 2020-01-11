@@ -11,9 +11,9 @@
       v-loading="listLoading"
       :data="list"
       element-loading-text="Loading"
-      border
       fit
       stripe
+      border
       highlight-current-row
     >
       <el-table-column align="center" label="序号" min-width="1">
