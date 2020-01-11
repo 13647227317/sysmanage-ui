@@ -179,7 +179,6 @@ export default {
         userRoleList.forEach(userRole => {
           this.temp.roleIdList.push(userRole.id)
         })
-        console.info(this.temp.roleIdList)
       })
     },
     handleSizeChange(val) {

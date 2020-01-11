@@ -1,7 +1,6 @@
 import request from '@/utils/request'
 
 export function selectPage(params) {
-  console.info('/role/selectPage')
   return request({
     url: '/role/selectPage',
     method: 'get',

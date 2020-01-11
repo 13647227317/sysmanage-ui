@@ -13,21 +13,45 @@
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
           <router-link to="/">
             <el-dropdown-item>
-              Home
+              首页
             </el-dropdown-item>
           </router-link>
-          <a target="_blank" href="https://github.com/PanJiaChen/sysmanage-ui/">
-            <el-dropdown-item>Github</el-dropdown-item>
+          <a target="_blank" href="https://github.com/13647227317/sysmanage-ui">
+            <el-dropdown-item>源码地址</el-dropdown-item>
           </a>
           <a target="_blank" href="https://panjiachen.github.io/vue-element-admin-site/#/">
-            <el-dropdown-item>Docs</el-dropdown-item>
+            <el-dropdown-item>参考文档</el-dropdown-item>
           </a>
           <el-dropdown-item divided>
-            <span style="display:block;" @click="logout">Log Out</span>
+            <span style="display:block;" @click="handleUpdateSelfInfo">密码修改</span>
+          </el-dropdown-item>
+          <el-dropdown-item divided>
+            <span style="display:block;" @click="logout">登出</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
+    <el-dialog v-if="dialogFormVisible" :title="个人密码修改" :visible.sync="dialogFormVisible">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
+        <el-form-item label="原密码" prop="oldPwd">
+          <el-input v-model="oldPwd"/>
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPwd">
+          <el-input v-model="newPwd"/>
+        </el-form-item>
+        <el-form-item label="确认新密码" prop="confirmNewPwd">
+          <el-input v-model="confirmNewPwd" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible=false">
+          取消
+        </el-button>
+        <el-button type="primary" @click="updatePassword()">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -40,6 +64,14 @@ export default {
   components: {
     Breadcrumb,
     Hamburger
+  },
+  data() {
+    return {
+      dialogFormVisible: false,
+      oldPwd: '',
+      newPwd: '',
+      confirmNewPwd: ''
+    }
   },
   computed: {
     ...mapGetters([
@@ -54,6 +86,9 @@ export default {
     async logout() {
       await this.$store.dispatch('user/logout')
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+    },
+    handleUpdateSelfInfo() {
+      this.dialogFormVisible = true
     }
   }
 }

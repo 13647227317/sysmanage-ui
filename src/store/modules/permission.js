@@ -50,8 +50,6 @@ const actions = {
   generateRoutes({ commit }, authMenus) {
     return new Promise(resolve => {
       const accessedRoutes = filterAsyncRoutes(asyncRoutes, authMenus)
-      console.info('accessedRoutes')
-      console.info(accessedRoutes)
       commit('SET_ROUTES', accessedRoutes)
       resolve(accessedRoutes)
     })
