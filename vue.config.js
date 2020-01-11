@@ -50,6 +50,16 @@ module.exports = {
       '/user': {
         target: 'http://localhost:8080',
         changeOrigin: true
+      },
+
+      '/role': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      },
+
+      '/menu': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
       }
 
     },

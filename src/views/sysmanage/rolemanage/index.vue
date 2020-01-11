@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.userAccount" placeholder="用户名" class="filter-item" style="width:200px;" />
-      <el-input v-model="listQuery.userName" placeholder="用户姓名" class="filter-item" style="width:200px;" />
+      <el-input v-model="listQuery.roleCode" placeholder="角色编码" class="filter-item" style="width:200px;" />
+      <el-input v-model="listQuery.roleName" placeholder="角色名称" class="filter-item" style="width:200px;" />
       <el-button type="primary" icon="el-icon-search" class="filter-item" @click="handleQuery">查询</el-button>
       <el-button type="primary" icon="el-icon-edit" class="filter-item" @click="handleAdd">新增</el-button>
     </div>
@@ -22,19 +22,19 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="用户名" min-width="2" align="center">
+      <el-table-column label="角色编码" min-width="2" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.userAccount }}</span>
+          <span>{{ scope.row.roleCode }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="姓名" min-width="2" align="center">
+      <el-table-column label="角色名称" min-width="2" align="center">
         <template slot-scope="scope">
-          {{ scope.row.userName }}
+          {{ scope.row.roleName }}
         </template>
       </el-table-column>
-      <el-table-column label="联系方式" min-width="2" align="center">
+      <el-table-column label="备注" min-width="2" align="center">
         <template slot-scope="scope">
-          {{ scope.row.mobile }}
+          {{ scope.row.remark }}
         </template>
       </el-table-column>
       <el-table-column align="center" prop="created_at" label="更新时间" min-width="2">
@@ -45,9 +45,8 @@
       </el-table-column>
       <el-table-column label="操作" min-width="3" align="center">
         <template slot-scope="scope">
-          <el-button v-if="scope.row.userAccount!=='admin'" size="mini" @click="handleUpdate(scope.row)">修改</el-button>
-          <el-button v-if="scope.row.userAccount!=='admin'" size="mini" @click="handleDelete(scope.row.id)">删除</el-button>
-          <el-button v-if="scope.row.userAccount!=='admin'" size="mini" @click="handleResetPwd(scope.row.id)">密码重置</el-button>
+          <el-button v-if="scope.row.userAccount!=='admin'" size="mini" icon="el-icon-edit" @click="handleUpdate(scope.row)">修改</el-button>
+          <el-button v-if="scope.row.userAccount!=='admin'" size="mini" icon="el-icon-delete" @click="handleDelete(scope.row.id)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -61,32 +60,30 @@
       @current-change="handleCurrentChange"
       @size-change="handleSizeChange"
     />
-
+    <!-- 角色修改 -->
     <el-dialog v-if="dialogFormVisible" :title="dialogTitle" :visible.sync="dialogFormVisible" @close="closeDialog">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="用户名" prop="userAccount">
-          <el-input v-model="temp.userAccount" :disabled="dialogStatus!='create'" />
+        <el-form-item label="角色编码" prop="roleCode">
+          <el-input v-model="temp.roleCode" :disabled="dialogStatus!='create'" />
         </el-form-item>
-        <el-form-item label="用户姓名" prop="userName">
-          <el-input v-model="temp.userName" />
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="temp.roleName" />
         </el-form-item>
-        <el-form-item label="手机号" prop="mobile">
-          <el-input v-model="temp.mobile" />
+        <el-form-item label="备注" prop="remark">
+          <el-input v-model="temp.remark" />
         </el-form-item>
-        <el-form-item label="角色">
-          <el-select
-            v-model="temp.roleIdList"
-            multiple
-            placeholder="请选择"
-            style="width:100%"
-          >
-            <el-option
-              v-for="item in roleList"
-              :key="item.id"
-              :label="item.roleName"
-              :value="item.id"
-            />
-          </el-select>
+        <el-form-item label="菜单权限">
+          <el-tree
+            ref="tree"
+            :check-strictly="checkStrictly"
+            :data="menuTreeData"
+            :default-checked-keys="roleMenuData"
+            :default-expand-all="true"
+            :props="defaultProps"
+            show-checkbox
+            node-key="id"
+            class="permission-tree"
+          />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -103,24 +100,20 @@
 </template>
 
 <script>
-import { selectPage, deleteUser, updateUser, saveUser, resetPassword, selectUserByUserAccount } from '@/api/user'
-import { selectRoleList, selectUserRoleList } from '@/api/role'
+import { selectPage, deleteRole, updateRole, saveRole, selectRoleByRoleCode } from '@/api/role'
+import { getMenuTree, getRoleMenu } from '@/api/menu'
 
 export default {
   data() {
-    var userAccountValidator = (rule, value, callback) => {
-      if (this.dialogStatus === 'create') {
-        selectUserByUserAccount(value).then(response => {
-          var isExist = (response.data && response.data.userAccount) === value
-          if (isExist) {
-            callback(new Error('用户名已存在'))
-          } else {
-            callback()
-          }
-        })
-      } else {
-        callback()
-      }
+    var roleCodeValidator = (rule, value, callback) => {
+      selectRoleByRoleCode(value).then(response => {
+        var isExist = (response.data && response.data.userAccount) === value
+        if (isExist) {
+          callback(new Error('角色编码已存在'))
+        } else {
+          callback()
+        }
+      })
     }
     return {
       list: [],
@@ -129,36 +122,50 @@ export default {
       listQuery: {
         current: 1,
         size: 10,
-        userAccount: '',
-        userName: ''
+        roleCode: '',
+        roleName: ''
       },
       dialogFormVisible: false,
       dialogTitle: '',
       dialogStatus: 'update',
       temp: {
         id: undefined,
-        userAccount: '',
-        userName: '',
-        mobile: '',
-        roleIdList: []
+        roleCode: '',
+        roleName: '',
+        remark: '',
+        menuIds: ''
       },
-      roleList: [],
       rules: {
-        userAccount: [
-          { required: true, message: '请输入用户名' },
-          { min: 4, max: 10, message: '长度在4到10个字符' },
-          { validator: userAccountValidator }
+        roleCode: [
+          { required: true, message: '请输入角色编码' },
+          { min: 4, max: 10, message: '长度在1到8个字符' },
+          { validator: roleCodeValidator }
         ],
-        userName: [{ required: true, message: '请输入用户姓名' }],
-        mobile: [{ required: true, message: '请输入手机号' }]
+        roleName: [
+          { required: true, message: '请输入角色名次' },
+          { min: 1, max: 10, message: '长度1到10个字符' }
+        ],
+        remark: [{ max: 80, message: '最大长度80个字符' }]
+      },
+      menuTreeData: [],
+      roleMenuData: [],
+      checkStrictly: false,
+      defaultProps: {
+        children: 'childrenList',
+        label: 'menuName'
       }
     }
   },
   created() {
     this.fetchData()
-    this.selectRoleList()
+    this.getMenuTree()
   },
   methods: {
+    getMenuTree() {
+      getMenuTree().then(response => {
+        this.menuTreeData = response.data
+      })
+    },
     fetchData() {
       this.listLoading = true
       selectPage(this.listQuery).then(response => {
@@ -166,20 +173,6 @@ export default {
         this.listQuery.current = response.data.current
         this.currentTotal = response.data.total
         this.listLoading = false
-      })
-    },
-    selectRoleList() {
-      selectRoleList().then(response => {
-        this.roleList = response.data
-      })
-    },
-    getUserRoleList(userId) {
-      selectUserRoleList(userId).then(response => {
-        const userRoleList = response.data || []
-        userRoleList.forEach(userRole => {
-          this.temp.roleIdList.push(userRole.id)
-        })
-        console.info(this.temp.roleIdList)
       })
     },
     handleSizeChange(val) {
@@ -190,13 +183,14 @@ export default {
       this.listQuery.current = val
       this.fetchData()
     },
-    handleUpdate(user) {
+    handleUpdate(role) {
       this.dialogStatus = 'update'
       this.dialogTitle = '修改'
-      this.temp = Object.assign({}, user)
-      this.temp.roleIdList = []
+      this.temp = Object.assign({}, role)
       this.dialogFormVisible = true
-      this.getUserRoleList(user.id)
+      getRoleMenu(role.id).then(response => {
+        this.roleMenuData = response.data
+      })
     },
     handleAdd() {
       this.dialogStatus = 'create'
@@ -204,27 +198,18 @@ export default {
       this.dialogFormVisible = true
     },
     handleDelete(userId) {
-      this.$confirm('是否确认删除用户?', '提示', {
+      this.$confirm('是否确认删除角色?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        deleteUser(userId).then(() => {
+        deleteRole(userId).then(() => {
           this.$message({
             type: 'success',
             message: '删除成功！'
           })
           this.fetchData()
         })
-      })
-    },
-    handleResetPwd(userId) {
-      resetPassword(userId).then(() => {
-        this.$message({
-          type: 'success',
-          message: '密码重置成功！'
-        })
-        this.fetchData()
       })
     },
     handleQuery() {
@@ -234,12 +219,12 @@ export default {
     resetTemp() {
       this.temp = {
         id: undefined,
-        userAccount: '',
-        userName: '',
-        mobile: '',
-        roleIdList: []
-
+        roleCode: '',
+        roleName: '',
+        remark: '',
+        menuIds: ''
       }
+      this.roleMenuData = []
     },
     closeDialog() {
       this.resetTemp()
@@ -248,7 +233,9 @@ export default {
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          updateUser(this.temp).then(() => {
+          const checkedKeys = this.$refs.tree.getCheckedKeys()
+          this.temp.menuIds = checkedKeys.join(',')
+          updateRole(this.temp).then(() => {
             this.$message({
               type: 'success',
               message: '修改成功'
@@ -263,7 +250,7 @@ export default {
     saveData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          saveUser(this.temp).then(() => {
+          saveRole(this.temp).then(() => {
             this.$message({
               type: 'success',
               message: '添加成功'

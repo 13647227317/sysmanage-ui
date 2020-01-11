@@ -23,7 +23,7 @@ export function filterAsyncRoutes(routes, authMenus) {
 
   routes.forEach(route => {
     const tmp = { ...route }
-    if (hasPermission(authMenus, tmp)) {
+    if (hasPermission(authMenus, tmp) || tmp.children) {
       if (tmp.children) {
         tmp.children = filterAsyncRoutes(tmp.children, authMenus)
       }
@@ -50,6 +50,8 @@ const actions = {
   generateRoutes({ commit }, authMenus) {
     return new Promise(resolve => {
       const accessedRoutes = filterAsyncRoutes(asyncRoutes, authMenus)
+      console.info('accessedRoutes')
+      console.info(accessedRoutes)
       commit('SET_ROUTES', accessedRoutes)
       resolve(accessedRoutes)
     })

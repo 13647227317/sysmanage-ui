@@ -52,3 +52,17 @@ export function saveUser(data) {
     data
   })
 }
+
+export function resetPassword(userId) {
+  return request({
+    url: '/user/resetPassword/' + userId,
+    method: 'post'
+  })
+}
+
+export function selectUserByUserAccount(userAccount) {
+  return request({
+    url: '/user/getUserByAccount/' + userAccount,
+    method: 'get'
+  })
+}

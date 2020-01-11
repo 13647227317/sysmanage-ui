@@ -46,12 +46,12 @@ export const constantRoutes = [
   {
     path: '/',
     component: Layout,
-    redirect: '/dashboard',
+    redirect: '/home',
     children: [{
-      path: 'dashboard',
-      name: 'Dashboard',
+      path: 'home',
+      name: 'Home',
       component: () => import('@/views/dashboard/index'),
-      meta: { title: '首页', icon: 'dashboard' }
+      meta: { title: '首页', icon: 'dashboard', menuCode: 'menuCode' }
     }]
   },
 
@@ -201,7 +201,7 @@ export const asyncRoutes = [
       {
         path: 'rolemanage',
         name: 'rolemanage',
-        component: () => import('@/views/tree/index'),
+        component: () => import('@/views/sysmanage/rolemanage/index'),
         meta: { title: '角色管理', icon: 'tree', menuCode: '010200' }
       }
     ]
